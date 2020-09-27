@@ -32,15 +32,15 @@ const CartProvider: React.FC = ({ children }) => {
     async function loadProducts(): Promise<void> {
       // TODO LOAD ITEMS FROM ASYNC STORAGE
       // await AsyncStorage.setItem(
-      //   '@Challenge-08:products-cart',
+      //   '@GoMarketPlace:products',
       //   JSON.stringify([] as Product[]),
       // );
-      const productsCart = await AsyncStorage.getItem(
-        '@Challenge-08:products-cart',
+      const storageProducts = await AsyncStorage.getItem(
+        '@GoMarketPlace:products',
       );
 
-      if (productsCart) {
-        setProducts(JSON.parse(productsCart));
+      if (storageProducts) {
+        setProducts([...JSON.parse(storageProducts)]);
       }
     }
 
@@ -50,28 +50,22 @@ const CartProvider: React.FC = ({ children }) => {
   const addToCart = useCallback(
     async product => {
       // TODO ADD A NEW ITEM TO THE CART
-      const newProduct: Product = {
-        ...product,
-        quantity: 1,
-      };
+      const productExist = products.find(p => p.id === product.id);
 
-      const newProducts = [...products];
-      const index = newProducts.findIndex(prod => prod.id === product.id);
-
-      if (index >= 0) {
-        newProducts[index].quantity += 1;
-        setProducts([...newProducts]);
+      if (productExist) {
+        setProducts(
+          products.map(p =>
+            p.id === product.id ? { ...product, quantity: p.quantity + 1 } : p,
+          ),
+        );
       } else {
-        setProducts([...newProducts, newProduct]);
+        setProducts([...products, { ...product, quantity: 1 }]);
       }
 
       await AsyncStorage.setItem(
-        '@Challenge-08:products-cart',
+        '@GoMarketPlace:products',
         JSON.stringify(products),
       );
-      console.log('newProduct=', newProduct);
-      console.log('products=', products);
-      console.log('index=', index);
     },
     [products],
   );
@@ -80,18 +74,16 @@ const CartProvider: React.FC = ({ children }) => {
     async id => {
       // TODO INCREMENTS A PRODUCT QUANTITY IN THE CART
 
-      const newProducts = [...products];
-      const index = newProducts.findIndex(prod => prod.id === id);
+      const newProducts = products.map(prod =>
+        prod.id === id ? { ...prod, quantity: prod.quantity + 1 } : prod,
+      );
 
-      if (index >= 0) {
-        newProducts[index].quantity += 1;
-        setProducts([...newProducts]);
+      setProducts(newProducts);
 
-        await AsyncStorage.setItem(
-          '@Challenge-08:products-cart',
-          JSON.stringify(newProducts),
-        );
-      }
+      await AsyncStorage.setItem(
+        '@GoMarketPlace:products',
+        JSON.stringify(newProducts),
+      );
     },
     [products],
   );
@@ -99,19 +91,18 @@ const CartProvider: React.FC = ({ children }) => {
   const decrement = useCallback(
     async id => {
       // TODO DECREMENTS A PRODUCT QUANTITY IN THE CART
-      console.log('decrement.id=', id);
-      const newProducts = [...products];
-      const index = newProducts.findIndex(prod => prod.id === id);
+      const newProducts = products.map(prod =>
+        prod.id === id && prod.quantity > 0
+          ? { ...prod, quantity: prod.quantity - 1 }
+          : prod,
+      );
 
-      if (index >= 0 && newProducts[index].quantity > 0) {
-        newProducts[index].quantity -= 1;
-        setProducts(newProducts);
+      setProducts(newProducts);
 
-        await AsyncStorage.setItem(
-          '@Challenge-08:products-cart',
-          JSON.stringify(newProducts),
-        );
-      }
+      await AsyncStorage.setItem(
+        '@GoMarketPlace:products',
+        JSON.stringify(newProducts),
+      );
     },
     [products],
   );
