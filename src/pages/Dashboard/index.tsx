@@ -36,6 +36,17 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     async function loadProducts(): Promise<void> {
       // TODO
+      api.get('/products').then(response => {
+        const productsFormatted: Product[] = response.data.map(
+          (product: Product) => ({
+            id: product.id,
+            image_url: product.image_url,
+            title: product.title,
+            price: product.price,
+          }),
+        );
+        setProducts(productsFormatted);
+      });
     }
 
     loadProducts();
@@ -43,6 +54,7 @@ const Dashboard: React.FC = () => {
 
   function handleAddToCart(item: Product): void {
     // TODO
+    addToCart(item);
   }
 
   return (
